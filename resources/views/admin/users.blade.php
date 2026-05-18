@@ -50,12 +50,12 @@
         }
     </style>
 
-    <!-- ЗАГОЛОВОК ПАНЕЛИ -->
-    <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom border-subtle-gray">
+    <!-- ЗАГОЛОВОК ПАНЕЛИ С КНОПКОЙ СОЗДАНИЯ -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center pb-2 mb-3 border-bottom border-subtle-gray gap-2">
         <h1 class="fs-4 fs-md-3 text-uppercase fw-bold text-graphite m-0" style="letter-spacing: 0.03rem;">
             Контроль доступа фабрики <span style="color: #198754;">Fluxcomfort</span>
         </h1>
-        <span class="badge bg-dark px-3 py-2 text-uppercase d-none d-sm-inline-block" style="font-size: 0.75rem; letter-spacing: 0.05rem;">
+        <span class="badge bg-dark px-3 py-2 text-uppercase d-none d-lg-inline-block" style="font-size: 0.75rem; letter-spacing: 0.05rem;">
             Панель администратора
         </span>
     </div>
@@ -94,16 +94,27 @@
         </div>
     @endif
 
+    <!-- СЕКЦИЯ ДЕЙСТВИЙ: ЗАГОВОЛОК СПИСКА + БРУТАЛЬНАЯ КНОПКА ДОБАВЛЕНИЯ -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-3">
+        <div class="text-uppercase fw-bold text-graphite small font-monospace" style="letter-spacing: 0.05rem;">
+            Зарегистрированные пользователи
+        </div>
+        <a href="{{ route('admin.users.create') }}" class="btn btn-dark rounded-0 text-uppercase fw-bold d-inline-flex align-items-center justify-content-center px-4 mobile-touch-target w-100 w-sm-auto" style="font-size: 0.75rem; letter-spacing: 0.05rem; height: 44px;">
+            + Создать пользователя
+        </a>
+    </div>
+
     <!-- ДЕСКТОПНАЯ СТРОГАЯ ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ (ЭКРАНЫ >= 768px) -->
     <div class="table-responsive d-none d-md-block bg-white border border-subtle-gray">
         <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
             <thead class="bg-light-block text-graphite text-uppercase small fw-bold border-bottom border-subtle-gray">
                 <tr>
-                    <th scope="col" class="py-3 px-4 border-subtle-gray" style="width: 10%;">ID</th>
+                    <th scope="col" class="py-3 px-4 border-subtle-gray" style="width: 5%;">ID</th>
                     <th scope="col" class="py-3 border-subtle-gray" style="width: 30%;">Имя пользователя</th>
-                    <th scope="col" class="py-3 border-subtle-gray" style="width: 30%;">Email-адрес</th>
+                    <th scope="col" class="py-3 border-subtle-gray" style="width: 25%;">Email-адрес</th>
                     <th scope="col" class="py-3 text-center border-subtle-gray" style="width: 15%;">Статус роли</th>
                     <th scope="col" class="py-3 text-end px-4 border-subtle-gray" style="width: 15%;">Изменить уровень</th>
+                    <th scope="col" class="py-3 text-end px-4 border-subtle-gray" style="width: 10%;">Действия</th>
                 </tr>
             </thead>
             <tbody>
@@ -133,6 +144,9 @@
                                 </select>
                                 <button type="submit" class="btn btn-dark btn-sm rounded-0 px-2 text-uppercase fw-bold" style="font-size: 0.7rem;" {{ Auth::id() == $user->id ? 'disabled' : '' }}>ОК</button>
                             </form>
+                        </td>
+                        <td class="py-3 text-end px-4 border-subtle-gray">
+                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-outline-dark btn-sm rounded-0 text-uppercase fw-bold" style="font-size: 0.7rem; padding: 2px 8px;">Изменить</a>
                         </td>
                     </tr>
                 @endforeach
@@ -164,8 +178,11 @@
                 </div>
 
                 <div class="bg-light-block p-2 mb-3 border border-subtle-gray" style="font-size: 0.85rem;">
-                    <span class="text-muted-gray">Email:</span> <span class="text-graphite font-monospace">{{ $user->email }}</span>
+                    <span class="text-muted-gray">Email:</span> <span class="text-graphite font-monospace text-wrap">{{ $user->email }}</span>
                 </div>
+
+                <!-- Кнопка перехода к полному редактированию профиля -->
+                <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-outline-dark w-100 rounded-0 text-uppercase fw-bold mb-2 mobile-touch-target d-flex align-items-center justify-content-center" style="font-size: 0.75rem; letter-spacing: 0.05rem;">📝 Редактировать профиль</a>
 
                 <!-- Форма смены ролей под палец (>= 44px) -->
                 <form action="{{ route('admin.users.role', $user->id) }}" method="POST">

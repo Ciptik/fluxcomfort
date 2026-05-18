@@ -60,7 +60,7 @@
         </span>
     </div>
 
-    <!-- МЕНЮ НАВИГАЦИИ АДМИНИСТРАТОРА (ТЕПЕРЬ В ПОЛНОМ СОГЛАСИИ) -->
+    <!-- МЕНЮ НАВИГАЦИИ АДМИНИСТРАТОРА -->
     <div class="mb-4 border-bottom border-subtle-gray">
         <ul class="nav nav-admin row g-0">
             <li class="nav-item col-6 col-md-auto">
@@ -87,6 +87,16 @@
             {{ session('success') }}
         </div>
     @endif
+
+    <!-- СЕКЦИЯ ДЕЙСТВИЙ И ФИЛЬТРОВ С КНОПКОЙ ДОБАВЛЕНИЯ -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-3">
+        <div class="text-uppercase fw-bold text-graphite small font-monospace" style="letter-spacing: 0.05rem;">
+            Текущие модели в каталоге
+        </div>
+        <a href="{{ route('admin.products.create') }}" class="btn btn-dark rounded-0 text-uppercase fw-bold d-inline-flex align-items-center justify-content-center px-4 mobile-touch-target w-100 w-sm-auto" style="font-size: 0.75rem; letter-spacing: 0.05rem; height: 44px;">
+            + Добавить товар
+        </a>
+    </div>
 
     <!-- ДЕСКТОПНАЯ СТРОГАЯ ТАБЛИЦА ТОВАРОВ (ЭКРАНЫ >= 768px) -->
     <div class="table-responsive d-none d-md-block bg-white border border-subtle-gray">
@@ -123,7 +133,7 @@
                         </td>
                         <td class="py-3 text-end px-4 border-subtle-gray">
                             <a href="{{ url('/admin/products/' . $product->id . '/edit') }}" class="btn btn-outline-dark btn-sm rounded-0 text-uppercase fw-bold px-3" style="font-size: 0.75rem; letter-spacing: 0.05rem;">
-                                ✏️ Изменить
+                                ✏ Изменить
                             </a>
                         </td>
                     </tr>
@@ -160,7 +170,7 @@
 
                 <!-- Кнопка действия с тач-зоной под палец (44px) -->
                 <a href="{{ url('/admin/products/' . $product->id . '/edit') }}" class="btn btn-dark w-100 rounded-0 text-uppercase fw-bold mobile-touch-target d-flex align-items-center justify-content-center" style="font-size: 0.8rem; letter-spacing: 0.05rem;">
-                    ✏️ Редактировать модель
+                    ✏ Редактировать модель
                 </a>
             </div>
         @endforeach

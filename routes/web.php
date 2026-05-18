@@ -6,6 +6,7 @@ use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 // --- ВИТРИНА, КАТАЛОГ И КАРТОЧКА ТОВАРА ---
@@ -18,10 +19,25 @@ Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
 Route::post('/add-to-cart/{id}', [ShopController::class, 'addToCart'])->name('cart.add');
 Route::delete('/remove-from-cart/{id}', [ShopController::class, 'removeFromCart'])->name('cart.remove');
 
-// --- ОФОРМЛЕНИЕ ЗАКАЗА (ОБЯЗАТЕЛЬНО ПОД АВТОРИЗАЦИЕЙ) ---
+// --- ОФОРМЛЕНИЕ ЗАКАЗА И КЛИЕНТСКИЕ ДЕЙСТВИЯ (ОБЯЗАТЕЛЬНО ПОД АВТОРИЗАЦИЕЙ) ---
 Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
     Route::post('/orders', [ShopController::class, 'storeOrder'])->name('orders.store');
+    
+    // Подтверждение оплаты клиентом (Перевод заказа в статус 'payment_review')
+    Route::post('/orders/{id}/pay', function ($id) {
+        $order = DB::table('orders')->where('id', $id)->where('user_id', Auth::id())->first();
+        if (!$order) abort(404);
+
+        if ($order->status === 'awaiting_payment') {
+            DB::table('orders')->where('id', $id)->update([
+                'status' => 'payment_review',
+                'updated_at' => now()
+            ]);
+            return redirect()->back()->with('success', 'Уведомление об оплате отправлено менеджеру. Ожидайте проверки выписки!');
+        }
+        return redirect()->back()->with('error', 'Этот заказ нельзя оплатить на данном этапе.');
+    })->name('orders.pay');
 });
 
 // --- ЛИЧНЫЙ КАБИНЕТ ПОЛЬЗОВАТЕЛЯ ---
@@ -32,7 +48,7 @@ Route::get('/dashboard', function () {
 
 // --- ПАНЕЛЬ АДМИНИСТРАТОРА (МЕНЕДЖЕР ФАБРИКИ FLUXCOMFORT) ---
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(function () {
-         
+           
     // 1. Управление заказами (Главная админки)
     Route::get('/', function () {
         $orders = DB::table('orders')
@@ -43,7 +59,12 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.dashboard', compact('orders'));
     })->name('admin.dashboard');
 
+    // 2. Изменение статуса заказа с валидацией новой ERP-цепочки фабрики
     Route::post('/orders/{id}/status', function (Request $request, $id) {
+        $request->validate([
+            'status' => 'required|in:new,awaiting_payment,payment_review,processing,delivery,completed,cancelled'
+        ]);
+
         DB::table('orders')->where('id', $id)->update([
             'status' => $request->status,
             'updated_at' => now()
@@ -51,7 +72,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return redirect()->back()->with('success', 'Статус мебельного заказа успешно изменен!');
     })->name('admin.orders.status');
 
-    // 2. Управление товарами (Список ассортимента)
+    // 3. Управление товарами (Список ассортимента)
     Route::get('/products', function () {
         $products = DB::table('products')
             ->join('categories', 'products.category_id', '=', 'categories.id')
@@ -61,13 +82,13 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.products', compact('products'));
     })->name('admin.products');
 
-    // 3. Добавление товара (Форма создания)
+    // 4. Добавление товара (Форма создания)
     Route::get('/products/create', function () {
         $categories = DB::table('categories')->get();
         return view('admin.create_product', compact('categories'));
     })->name('admin.products.create');
 
-    // 4. Добавление товара (Сохранение в БД с поддержкой загрузки изображений)
+    // 5. Добавление товара (Сохранение в БД с поддержкой загрузки изображений)
     Route::post('/products/store', function (Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -79,7 +100,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         ]);
 
         $slug = \Illuminate\Support\Str::slug($request->name);
-        $imagePath = 'images/products/default.jpg'; 
+        $imagePath = 'images/products/default.jpg';   
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -103,7 +124,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return redirect()->route('admin.products')->with('success', 'Новая модель мебели успешно добавлена в каталог!');
     })->name('admin.products.store');
 
-    // 5. Форма редактирования товара
+    // 6. Форма редактирования товара
     Route::get('/products/{id}/edit', function ($id) {
         $product = DB::table('products')->where('id', $id)->first();
         $categories = DB::table('categories')->get();
@@ -111,7 +132,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.edit_product', compact('product', 'categories'));
     })->name('admin.products.edit');
 
-    // 6. Сохранение изменений товара (Обновление описания, названия и картинки со сбросом старой)
+    // 7. Сохранение изменений товара (Обновление описания, названия и картинки со сбросом старой)
     Route::post('/products/{id}/update', function (Request $request, $id) {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -125,10 +146,9 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         if (!$product) abort(404);
 
         $slug = \Illuminate\Support\Str::slug($request->name);
-        $imagePath = $product->image_path; 
+        $imagePath = $product->image_path;   
 
         if ($request->hasFile('image')) {
-            // Удаляем старый медиафайл, если это не дефолтная системная заглушка
             if ($product->image_path && $product->image_path !== 'images/products/default.jpg') {
                 $oldFile = public_path($product->image_path);
                 if (file_exists($oldFile)) {
@@ -155,13 +175,43 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return redirect()->route('admin.products')->with('success', 'Параметры мебели успешно обновлены!');
     })->name('admin.products.update');
 
-    // 7. Управление пользователями (Список аккаунтов)
+    // 8. Управление пользователями (Список аккаунтов)
     Route::get('/users', function () {
         $users = DB::table('users')->orderBy('id', 'asc')->get();
         return view('admin.users', compact('users'));
     })->name('admin.users');
 
-    // 8. Изменение роли пользователя (Админ/Пользователь)
+    // 9. Добавление пользователя (Форма создания)
+    Route::get('/users/create', function () {
+        return view('admin.create_user');
+    })->name('admin.users.create');
+
+    // 10. Добавление пользователя (Сохранение в БД)
+    Route::post('/users/store', function (Request $request) {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6',
+            'role' => 'required|in:admin,user',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        DB::table('users')->insert([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'Новый пользователь успешно добавлен!');
+    })->name('admin.users.store');
+
+    // 11. Изменение роли пользователя напрямую из списка
     Route::post('/users/{id}/role', function (Request $request, $id) {
         if (Auth::id() == $id) {
             return redirect()->back()->with('error', 'Вы не можете изменить роль самому себе!');
@@ -174,6 +224,45 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
 
         return redirect()->back()->with('success', 'Права доступа пользователя успешно изменены.');
     })->name('admin.users.role');
+
+    // 12. Форма редактирования пользователя
+    Route::get('/users/{id}/edit', function ($id) {
+        $user = DB::table('users')->where('id', $id)->first();
+        if (!$user) abort(404);
+        return view('admin.edit_user', compact('user'));
+    })->name('admin.users.edit');
+
+    // 13. Сохранение изменений пользователя (с умным сбросом пароля)
+    Route::put('/users/{id}/update', function (Request $request, $id) {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'role' => 'required|in:admin,user',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'password' => 'nullable|string|min:6',
+        ]);
+
+        $updateData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'updated_at' => now()
+        ];
+
+        if (Auth::id() != $id) {
+            $updateData['role'] = $request->role;
+        }
+
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        DB::table('users')->where('id', $id)->update($updateData);
+
+        return redirect()->route('admin.users')->with('success', 'Данные пользователя успешно обновлены в базе!');
+    })->name('admin.users.update');
 });
 
 // --- ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ (BREEZE СТАНДАРТ) ---
@@ -183,13 +272,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// --- ИНФОРМАЦИОННЫЕ СТРАНИЦЫ ДЛЯ ДИПЛОМА (ФЗ-152 И УСЛОВИЯ ДОСТАВКИ) ---
+// --- ИНФОРМАЦИОННЫЕ СТРАНИЦЫ ДЛЯ ДИПЛОМА ---
 Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/delivery', 'delivery')->name('delivery');
 Route::view('/about', 'about')->name('about');
 Route::view('/contacts', 'contacts')->name('contacts');
 
-// Имитация бэкенда для формы обратной связи (чтобы фронтенд-код LLM не падал)
 Route::post('/contacts/send', function (Request $request) {
     $request->validate([
         'name' => 'required|string|max:255',
