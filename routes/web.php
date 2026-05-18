@@ -23,8 +23,9 @@ Route::delete('/remove-from-cart/{id}', [ShopController::class, 'removeFromCart'
 Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
     Route::post('/orders', [ShopController::class, 'storeOrder'])->name('orders.store');
-    
-    // Подтверждение оплаты клиентом (Перевод заказа в статус 'payment_review')
+     
+    // ЦЕПОЧКА ШАГ 3: Клиент платит по реквизитам и жмет кнопку "Подтвердить оплату"
+    // Переводит заказ из 'awaiting_payment' в статус 'payment_review'
     Route::post('/orders/{id}/pay', function ($id) {
         $order = DB::table('orders')->where('id', $id)->where('user_id', Auth::id())->first();
         if (!$order) abort(404);
@@ -38,6 +39,22 @@ Route::middleware(['auth'])->group(function () {
         }
         return redirect()->back()->with('error', 'Этот заказ нельзя оплатить на данном этапе.');
     })->name('orders.pay');
+
+    // ДОБАВЛЕНО: Просмотр страницы конкретного заказа клиентом
+    Route::get('/orders/{id}', function ($id) {
+        // Проверяем, что заказ существует и принадлежит именно авторизованному клиенту
+        $order = DB::table('orders')->where('id', $id)->where('user_id', Auth::id())->first();
+        if (!$order) abort(404);
+
+        // Собираем все позиции мебельного заказа с данными из таблицы товаров
+        $items = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('order_items.order_id', $id)
+            ->select('order_items.*', 'products.name', 'products.image_path', 'products.slug')
+            ->get();
+
+        return view('orders.show', compact('order', 'items'));
+    })->name('orders.show');
 });
 
 // --- ЛИЧНЫЙ КАБИНЕТ ПОЛЬЗОВАТЕЛЯ ---
@@ -48,7 +65,7 @@ Route::get('/dashboard', function () {
 
 // --- ПАНЕЛЬ АДМИНИСТРАТОРА (МЕНЕДЖЕР ФАБРИКИ FLUXCOMFORT) ---
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(function () {
-           
+            
     // 1. Управление заказами (Главная админки)
     Route::get('/', function () {
         $orders = DB::table('orders')
@@ -59,10 +76,10 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.dashboard', compact('orders'));
     })->name('admin.dashboard');
 
-    // 2. Изменение статуса заказа с валидацией новой ERP-цепочки фабрики
+    // ЦЕПОЧКА ШАГИ 2, 4, 5, 6: Изменение статуса заказа админом на любом этапе
     Route::post('/orders/{id}/status', function (Request $request, $id) {
         $request->validate([
-            'status' => 'required|in:new,awaiting_payment,payment_review,processing,delivery,completed,cancelled'
+            'status' => 'required|in:new,awaiting_payment,payment_review,manufacturing,processing,delivery,completed,cancelled'
         ]);
 
         DB::table('orders')->where('id', $id)->update([
@@ -88,7 +105,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.create_product', compact('categories'));
     })->name('admin.products.create');
 
-    // 5. Добавление товара (Сохранение в БД с поддержкой загрузки изображений)
+    // 5. Добавление товара (Сохранение в БД)
     Route::post('/products/store', function (Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -100,7 +117,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         ]);
 
         $slug = \Illuminate\Support\Str::slug($request->name);
-        $imagePath = 'images/products/default.jpg';   
+        $imagePath = 'images/products/default.jpg';    
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -132,7 +149,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.edit_product', compact('product', 'categories'));
     })->name('admin.products.edit');
 
-    // 7. Сохранение изменений товара (Обновление описания, названия и картинки со сбросом старой)
+    // 7. Сохранение изменений товара
     Route::post('/products/{id}/update', function (Request $request, $id) {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -146,7 +163,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         if (!$product) abort(404);
 
         $slug = \Illuminate\Support\Str::slug($request->name);
-        $imagePath = $product->image_path;   
+        $imagePath = $product->image_path;    
 
         if ($request->hasFile('image')) {
             if ($product->image_path && $product->image_path !== 'images/products/default.jpg') {
@@ -175,18 +192,18 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return redirect()->route('admin.products')->with('success', 'Параметры мебели успешно обновлены!');
     })->name('admin.products.update');
 
-    // 8. Управление пользователями (Список аккаунтов)
+    // 8. Управление пользователями
     Route::get('/users', function () {
         $users = DB::table('users')->orderBy('id', 'asc')->get();
         return view('admin.users', compact('users'));
     })->name('admin.users');
 
-    // 9. Добавление пользователя (Форма создания)
+    // 9. Добавление пользователя
     Route::get('/users/create', function () {
         return view('admin.create_user');
     })->name('admin.users.create');
 
-    // 10. Добавление пользователя (Сохранение в БД)
+    // 10. Сохранение пользователя
     Route::post('/users/store', function (Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -211,7 +228,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return redirect()->route('admin.users')->with('success', 'Новый пользователь успешно добавлен!');
     })->name('admin.users.store');
 
-    // 11. Изменение роли пользователя напрямую из списка
+    // 11. Изменение роли пользователя
     Route::post('/users/{id}/role', function (Request $request, $id) {
         if (Auth::id() == $id) {
             return redirect()->back()->with('error', 'Вы не можете изменить роль самому себе!');
@@ -232,7 +249,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.edit_user', compact('user'));
     })->name('admin.users.edit');
 
-    // 13. Сохранение изменений пользователя (с умным сбросом пароля)
+    // 13. Сохранение изменений пользователя
     Route::put('/users/{id}/update', function (Request $request, $id) {
         $request->validate([
             'name' => 'required|string|max:255',

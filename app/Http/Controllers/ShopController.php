@@ -58,7 +58,7 @@ class ShopController extends Controller
         return view('catalog', compact('products', 'categories'));
     }
 
-    // КАРТОЧКА ТОВАРА (Добавлено!)
+    // КАРТОЧКА ТОВАРА
     public function show($id)
     {
         $product = DB::table('products')->where('id', $id)->first();
@@ -105,7 +105,7 @@ class ShopController extends Controller
         return redirect()->back()->with('success', 'Товар добавлен в корзину!');
     }
 
-    // Умное удаление (Синхронизировано название метода с web.php!)
+    // Умное удаление
     public function removeFromCart($id)
     {
         $cart = session()->get('cart', []);
@@ -126,7 +126,7 @@ class ShopController extends Controller
         return redirect()->back();
     }
 
-    // СТРАНИЦА ОФОРМЛЕНИЯ ЗАКАЗА (Добавлено!)
+    // СТРАНИЦА ОФОРМЛЕНИЯ ЗАКАЗА
     public function checkout()
     {
         $cart = session()->get('cart', []);
@@ -140,7 +140,7 @@ class ShopController extends Controller
         return view('checkout', compact('cart', 'total'));
     }
 
-    // Обработка оформления заказа (Синхронизировано под роут orders.store!)
+    // Обработка оформления заказа
     public function storeOrder(Request $request)
     {
         $cart = session()->get('cart', []);
@@ -160,10 +160,10 @@ class ShopController extends Controller
             $total += $item['price'] * $item['quantity'];
         }
 
-        // Сохраняем заказ
+        // Сохраняем заказ с корректным полем delivery_type под структуру БД
         $orderId = DB::table('orders')->insertGetId([
-            'user_id' => Auth::id(), 
-            'delivery_method' => $request->delivery_method,
+            'user_id' => Auth::id(),  
+            'delivery_type' => $request->delivery_method,
             'phone' => $request->phone,
             'address' => $request->delivery_method === 'delivery' ? $request->address : 'Самовывоз с фабрики',
             'total_price' => $total,

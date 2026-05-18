@@ -1,55 +1,69 @@
-<section class="space-y-6">
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Delete Account') }}
+<section>
+    <header class="mb-4">
+        <h2 class="fs-5 text-uppercase fw-bold text-danger m-0" style="letter-spacing: 0.05rem;">
+            Удаление аккаунта
         </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
+        <p class="mt-1 text-sm text-muted-gray mb-0" style="font-size: 0.85rem;">
+            Как только ваш аккаунт будет удален, все его ресурсы и данные будут стерты безвозвратно. Перед удалением, пожалуйста, сохраните любые важные данные или информацию.
         </p>
     </header>
 
-    <x-danger-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Delete Account') }}</x-danger-button>
+    <!-- КНОПКА ВЫЗОВА МОДАЛЬНОГО ОКНА БЕЗ СКРУГЛЕНИЙ -->
+    <button type="button" class="btn btn-outline-danger btn-touch rounded-0 text-uppercase fw-bold px-4 w-100 w-sm-auto" style="font-size: 0.75rem; letter-spacing: 0.05rem;" data-bs-toggle="modal" data-bs-target="#confirmUserDeletionModal">
+        Удалить личный кабинет
+    </button>
 
-    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
-            @csrf
-            @method('delete')
+    <!-- ЧИСТЫЙ MODAL НА BOOTSTRAP 5 -->
+    <div class="modal fade" id="confirmUserDeletionModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="confirmUserDeletionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-0 border border-subtle-gray bg-white p-2">
+                
+                <form method="post" action="{{ route('profile.destroy') }}" class="modal-body p-4">
+                    @csrf
+                    @method('delete')
 
-            <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Are you sure you want to delete your account?') }}
-            </h2>
+                    <h2 class="fs-5 text-uppercase fw-bold text-graphite mb-2" id="confirmUserDeletionModalLabel" style="letter-spacing: 0.05rem;">
+                        Вы уверены, что хотите удалить аккаунт?
+                    </h2>
 
-            <p class="mt-1 text-sm text-gray-600">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
-            </p>
+                    <p class="text-muted-gray mb-4" style="font-size: 0.85rem; line-height: 1.4;">
+                        После подтверждения все ваши персональные данные и история заказов будут полностью уничтожены. Пожалуйста, введите ваш пароль, чтобы подтвердить серьезность намерений.
+                    </p>
 
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+                    <!-- ПОЛЕ ПАРОЛЯ ДЛЯ ПОДТВЕРЖДЕНИЯ -->
+                    <div class="mb-4">
+                        <label for="password" class="form-label text-uppercase small font-monospace fw-bold text-muted-gray mb-1" style="font-size: 0.65rem; letter-spacing: 0.05rem;">Введите ваш текущий пароль</label>
+                        <input id="password" name="password" type="password" class="form-control rounded-0 border-subtle-gray text-graphite @error('password', 'userDeletion') is-invalid @enderror" placeholder="Пароль доступа" required>
+                        @error('password', 'userDeletion')
+                            <div class="text-danger small mt-1 font-monospace" style="font-size: 0.75rem;">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
+                    <!-- ПАНЕЛЬ КНОПОК УПРАВЛЕНИЯ МОДАЛКОЙ -->
+                    <div class="d-flex flex-column flex-sm-row justify-content-end gap-2 pt-2 border-top border-subtle-gray">
+                        <button type="button" class="btn btn-outline-dark btn-touch rounded-0 text-uppercase fw-bold font-monospace w-100 w-sm-auto" style="font-size: 0.7rem; letter-spacing: 0.05rem;" data-bs-dismiss="modal">
+                            Отмена
+                        </button>
+                        <button type="submit" class="btn btn-danger btn-touch rounded-0 text-uppercase fw-bold font-monospace w-100 w-sm-auto" style="font-size: 0.7rem; letter-spacing: 0.05rem;">
+                            Удалить безвозвратно
+                        </button>
+                    </div>
+                </form>
 
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
             </div>
-
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Cancel') }}
-                </x-secondary-button>
-
-                <x-danger-button class="ms-3">
-                    {{ __('Delete Account') }}
-                </x-danger-button>
-            </div>
-        </form>
-    </x-modal>
+        </div>
+    </div>
 </section>
+
+<!-- ПОДКЛЮЧЕНИЕ СКРИПТА BOOTSTRAP ДЛЯ ОТКРЫТИЯ МОДАЛКИ (ЕСЛИ ЕЩЕ НЕ ПОДКЛЮЧЕН В ПАКЕТЕ) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+
+<!-- Скрипт автоматического открытия модального окна в случае ошибок валидации -->
+@if($errors->userDeletion->isNotEmpty())
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var myModal = new bootstrap.Modal(document.getElementById('confirmUserDeletionModal'));
+        myModal.show();
+    });
+</script>
+@endif
