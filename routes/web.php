@@ -67,7 +67,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.create_product', compact('categories'));
     })->name('admin.products.create');
 
-    // 4. Добавление товара (Сохранение в БД)
+    // 4. Добавление товара (Сохранение в БД с поддержкой загрузки изображений)
     Route::post('/products/store', function (Request $request) {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -75,9 +75,18 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $slug = \Illuminate\Support\Str::slug($request->name);
+        $imagePath = 'images/products/default.jpg'; 
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = $slug . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/products'), $filename);
+            $imagePath = 'images/products/' . $filename;
+        }
 
         DB::table('products')->insert([
             'name' => $request->name,
@@ -86,7 +95,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
             'price' => $request->price,
             'stock' => $request->stock,
             'description' => $request->description,
-            'image_path' => 'images/products/default.jpg',
+            'image_path' => $imagePath,
             'created_at' => now(),
             'updated_at' => now()
         ]);
@@ -102,20 +111,44 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.edit_product', compact('product', 'categories'));
     })->name('admin.products.edit');
 
-    // 6. Сохранение изменений товара
+    // 6. Сохранение изменений товара (Обновление описания, названия и картинки со сбросом старой)
     Route::post('/products/{id}/update', function (Request $request, $id) {
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
+
+        $product = DB::table('products')->where('id', $id)->first();
+        if (!$product) abort(404);
+
+        $slug = \Illuminate\Support\Str::slug($request->name);
+        $imagePath = $product->image_path; 
+
+        if ($request->hasFile('image')) {
+            // Удаляем старый медиафайл, если это не дефолтная системная заглушка
+            if ($product->image_path && $product->image_path !== 'images/products/default.jpg') {
+                $oldFile = public_path($product->image_path);
+                if (file_exists($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+
+            $file = $request->file('image');
+            $filename = $slug . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/products'), $filename);
+            $imagePath = 'images/products/' . $filename;
+        }
 
         DB::table('products')->where('id', $id)->update([
             'name' => $request->name,
+            'slug' => $slug,
             'price' => $request->price,
             'stock' => $request->stock,
             'description' => $request->description,
+            'image_path' => $imagePath,
             'updated_at' => now()
         ]);
 

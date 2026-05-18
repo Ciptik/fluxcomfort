@@ -19,6 +19,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->string('slug')->unique(); // Добавили уникальный slug для ЧПУ ссылок
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->string('image_path')->nullable();
@@ -29,9 +30,10 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('phone'); // Добавили телефон для связи по мебельному заказу
             $table->decimal('total_price', 10, 2);
-            $table->string('status')->default('new'); 
-            $table->string('delivery_type');
+            $table->string('status')->default('new');  
+            $table->string('delivery_type'); // Совпадает с логикой роутов/контроллеров (delivery/pickup)
             $table->string('address')->nullable();
             $table->text('comment')->nullable();
             $table->timestamps();
