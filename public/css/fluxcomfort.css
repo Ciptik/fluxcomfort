@@ -90,3 +90,37 @@ body {
 @media (max-width: 767.98px) {
     .mobile-touch-target { min-height: 44px; display: flex; align-items: center; justify-content: center; }
 }
+
+/* БРУТАЛИСТИЧНАЯ ПАГИНАЦИЯ FLUXCOMFORT */
+.pagination {
+    --bs-pagination-border-radius: 0px !important;
+    --bs-pagination-inner-border-radius: 0px !important;
+}
+.page-link {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+    border-color: #DEE2E6 !important;
+    border-radius: 0px !important;
+    font-family: var(--bs-font-monospace) !important;
+    font-size: 0.85rem !important;
+    padding: 0.5rem 0.75rem !important;
+}
+.page-link:hover {
+    color: #212529 !important;
+    background-color: #F8F9FA !important;
+    border-color: #DEE2E6 !important;
+}
+.page-item.active .page-link {
+    color: #ffffff !important;
+    background-color: #212529 !important;
+    border-color: #212529 !important;
+}
+.page-item.disabled .page-link {
+    color: #6C757D !important;
+    background-color: #ffffff !important;
+    border-color: #DEE2E6 !important;
+}
+.page-link:focus {
+    background-color: #F8F9FA !important;
+    box-shadow: none !important;
+}

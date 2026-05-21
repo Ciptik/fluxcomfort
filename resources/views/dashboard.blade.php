@@ -1,5 +1,4 @@
 <x-app-layout>
-    <!-- ПОДКЛЮЧЕНИЕ BOOTSTRAP ДЛЯ ИЗОЛЯЦИИ СТИЛЕЙ КБ -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -43,13 +42,24 @@
             box-shadow: none !important;
         }
 
-        /* Интеграция кастомных бейджей под спецификацию ERP */
-        .badge-erp {
-            font-size: 0.7rem !important;
-            letter-spacing: 0.05rem !important;
-            padding: 5px 10px !important;
+        /* Премиальные текстовые бейджи статусов без рамок и скруглений */
+        .badge-flux {
+            font-size: 0.65rem !important;
+            letter-spacing: 0.08rem !important;
+            padding: 6px 12px !important;
             font-weight: 700 !important;
+            text-transform: uppercase;
             display: inline-block;
+        }
+
+        /* Интерактивная строка заказа */
+        .order-row-link {
+            text-decoration: none !important;
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #DEE2E6 !important;
+        }
+        .order-row-link:hover {
+            background-color: #F8F9FA !important;
         }
 
         @media (max-width: 767.98px) {
@@ -59,23 +69,20 @@
         }
     </style>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ ЛИЧНОГО КАБИНЕТА -->
     <div class="container py-4 py-md-5">
         <div class="row">
             <div class="col-12 mx-auto" style="max-width: 1140px;">
                 
-                <!-- БЕЗОПАСНОСТЬ И СЕССИИ (УВЕДОМЛЕНИЯ) -->
                 @if(session('success'))
                     <div class="alert alert-success rounded-0 mb-4 border-0 border-start border-success border-4 p-3 fs-6 text-graphite bg-light-block" role="alert">
                         {{ session('success') }}
                     </div>
                 @endif
 
-                <!-- ВЕРХНЯЯ ПАНЕЛЬ: ЗАГОЛОВОК И НАВИГАЦИЯ -->
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center pb-3 mb-4 border-bottom border-subtle-gray gap-3">
                     <div>
                         <span class="text-muted-gray text-uppercase font-monospace small d-block mb-1" style="font-size: 0.7rem; letter-spacing: 0.05rem;">
-                            Профиль Клиента / Фабрика
+                            Профиль Клиента // Информационная панель
                         </span>
                         <h1 class="fs-3 text-uppercase fw-bold text-graphite m-0" style="letter-spacing: 0.05rem;">
                             Личный кабинет: {{ Auth::user()->name }}
@@ -86,14 +93,13 @@
                     </a>
                 </div>
 
-                <!-- 1. ОТЕЦ СТРУКТУРЫ — ВЕРХНИЙ БЛОК (ПАСПОРТ КЛИЕНТА) -->
                 <div class="bg-white border border-subtle-gray p-3 p-md-4 mb-5">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-3">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
                         <div class="text-uppercase fw-bold text-graphite font-monospace" style="font-size: 0.8rem; letter-spacing: 0.05rem;">
-                            🗂️ Регистрационные данные
+                            🗂 Регистрационные спецификации
                         </div>
                         <a href="{{ route('profile.edit') }}" class="btn btn-outline-dark btn-sm rounded-0 text-uppercase fw-bold w-100 w-md-auto mobile-touch-target d-inline-flex align-items-center justify-content-center" style="font-size: 0.7rem; letter-spacing: 0.05rem; padding: 4px 12px; height: 32px;">
-                            ⚙️ Редактировать профиль
+                            ⚙ Изменить параметры
                         </a>
                     </div>
                     
@@ -117,156 +123,95 @@
                     </div>
                 </div>
 
-                <!-- 2. СЕРДЦЕ СТРАНИЦЫ — НИЖНИЙ БЛОК (ИСТОРИЯ ЗАКАЗОВ) -->
                 <div class="mb-2">
                     <h2 class="fs-5 text-uppercase fw-bold text-graphite mb-3" style="letter-spacing: 0.05rem;">
-                        История заказов
+                        Архив и мониторинг заказов
                     </h2>
 
                     @if($orders->isEmpty())
-                        <!-- ПУСТОЕ СОСТОЯНИЕ -->
                         <div class="border border-subtle-gray p-5 text-center bg-white">
-                            <p class="text-muted-gray mb-4 fs-6">В вашей истории пока нет активных или завершенных заказов.</p>
+                            <p class="text-muted-gray mb-4 fs-6">В вашей персональной истории пока нет оформленных заказов.</p>
                             <a href="/catalog" class="btn btn-accent rounded-0 px-4 py-3 text-uppercase fw-bold mobile-touch-target" style="letter-spacing: 0.05rem; font-size: 0.8rem;">
                                 Перейти к каталогу мебели
                             </a>
                         </div>
                     @else
                         
-                        <!-- A) ДЕСКТОПНЫЙ ИНТЕРФЕЙС (ЭКРАНЫ >= 768px) -->
-                        <div class="table-responsive d-none d-md-block">
-                            <table class="table table-bordered border-subtle-gray align-middle bg-white mb-0" style="font-size: 0.9rem;">
-                                <thead class="bg-light-block text-graphite text-uppercase small fw-bold" style="font-size: 0.75rem; letter-spacing: 0.05rem;">
-                                    <tr>
-                                        <th scope="col" class="py-3 border-subtle-gray ps-3">Заказ</th>
-                                        <th scope="col" class="py-3 border-subtle-gray">Дата оформления</th>
-                                        <th scope="col" class="py-3 border-subtle-gray">Доставка и адресная логистика</th>
-                                        <th scope="col" class="py-3 border-subtle-gray text-center" style="width: 280px;">Статус и управление ERP</th>
-                                        <th scope="col" class="py-3 border-subtle-gray text-end pe-3">Сумма</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($orders as $order)
-                                        <tr>
-                                            <td class="py-3 border-subtle-gray ps-3 fw-bold text-graphite">
-                                                #00{{ $order->id }}
-                                            </td>
-                                            <td class="py-3 border-subtle-gray text-muted-gray font-monospace">
-                                                {{ \Carbon\Carbon::parse($order->created_at)->format('d.m.Y') }}
-                                            </td>
-                                            <td class="py-3 border-subtle-gray text-graphite text-wrap">
-                                                <span class="fw-semibold">{{ $order->delivery_type == 'pickup' ? '🧱 Самовывоз' : '🚚 Доставка' }}</span>
-                                                @if($order->address)
-                                                    <div class="small text-muted-gray mt-1">{{ $order->address }}</div>
-                                                @endif
-                                            </td>
-                                            <td class="py-3 border-subtle-gray text-center">
-                                                <div class="d-flex flex-column align-items-center gap-2">
-                                                    @switch($order->status)
-                                                        @case('new')
-                                                            <span class="badge badge-erp bg-light text-dark border border-secondary-subtle">⏳ ПРОВЕРКА</span>
-                                                            @break
-                                                        @case('awaiting_payment')
-                                                            <span class="badge badge-erp bg-warning text-dark">⚠️ ОЖИДАЕТ ОПЛАТЫ</span>
-                                                            <form action="{{ route('orders.pay', $order->id) }}" method="POST" class="d-inline w-100 px-3">
-                                                                @csrf
-                                                                <button type="submit" class="btn btn-accent btn-sm rounded-0 text-uppercase fw-bold w-100 font-monospace" style="font-size: 0.65rem; padding: 4px 8px;">💳 Я оплатил</button>
-                                                            </form>
-                                                            @break
-                                                        @case('payment_review')
-                                                            <span class="badge badge-erp bg-info text-dark">🔍 ПРОВЕРКА ПЛАТЕЖА</span>
-                                                            @break
-                                                        @case('processing')
-                                                            <span class="badge badge-erp bg-success-subtle border text-success" style="border-color: #198754 !important; color: #198754 !important;">🔨 В СБОРКЕ (ЦЕХ)</span>
-                                                            @break
-                                                        @case('delivery')
-                                                            <span class="badge badge-erp bg-info-subtle border text-info" style="border-color: #0dcaf0 !important; color: #0dcaf0 !important;">🚛 В ДОСТАВКЕ</span>
-                                                            @break
-                                                        @case('completed')
-                                                            <span class="badge badge-erp bg-dark text-white">✔️ ЗАВЕРШЕН</span>
-                                                            @break
-                                                        @case('cancelled')
-                                                            <span class="badge badge-erp bg-danger-subtle border text-danger" style="border-color: #dc3545 !important; color: #dc3545 !important;">❌ ОТМЕНЕН</span>
-                                                            @break
-                                                        @default
-                                                            <span class="badge badge-erp bg-light text-dark border">{{ strtoupper($order->status) }}</span>
-                                                    @endswitch
-                                                </div>
-                                            </td>
-                                            <td class="py-3 border-subtle-gray text-end pe-3 fw-bold text-graphite fs-5 font-monospace">
-                                                {{ number_format($order->total_price, 2, '.', ' ') }} ₽
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                        <div class="d-none d-md-flex row px-3 pb-2 text-uppercase fw-bold text-muted-gray font-monospace" style="font-size: 0.7rem; letter-spacing: 0.05rem;">
+                            <div class="col-md-2">Документ</div>
+                            <div class="col-md-2">Дата</div>
+                            <div class="col-md-4">Логистический статус</div>
+                            <div class="col-md-2 text-center">Этап ERP</div>
+                            <div class="col-md-2 text-end">Сумма</div>
                         </div>
 
-                        <!-- B) МОБИЛЬНЫЙ ИНТЕРФЕЙС (ЭКРАНЫ < 768px) -->
-                        <div class="d-md-none d-flex flex-column gap-3">
+                        <div class="d-flex flex-column">
                             @foreach($orders as $order)
-                                <div class="border border-subtle-gray p-3 bg-white">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <span class="text-graphite fw-bold fs-5">#00{{ $order->id }}</span>
-                                            <div class="text-muted-gray small font-monospace">{{ \Carbon\Carbon::parse($order->created_at)->format('d.m.Y') }}</div>
+                                <a href="{{ url('/orders/' . $order->id) }}" class="order-row-link text-dark p-3 bg-white">
+                                    <div class="row align-items-center g-3">
+                                        
+                                        <div class="col-6 col-md-2">
+                                            <span class="d-md-none text-muted-gray small d-block font-monospace text-uppercase" style="font-size: 0.6rem;">Заказ:</span>
+                                            <span class="fw-bold text-graphite fs-6">#00{{ $order->id }}</span>
                                         </div>
-                                        <div>
+
+                                        <div class="col-6 col-md-2 text-end text-md-start">
+                                            <span class="d-md-none text-muted-gray small d-block font-monospace text-uppercase" style="font-size: 0.6rem;">Оформлен:</span>
+                                            <span class="text-muted-gray font-monospace">{{ \Carbon\Carbon::parse($order->created_at)->format('d.m.Y') }}</span>
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
+                                            <span class="d-md-none text-muted-gray small d-block font-monospace text-uppercase" style="font-size: 0.6rem; mb-1">Способ получения:</span>
+                                            <div class="text-graphite small">
+                                                <span class="fw-semibold">{{ $order->delivery_type == 'pickup' ? '🧱 Самовывоз из цеха' : '🚚 Адресная доставка' }}</span>
+                                                @if($order->address)
+                                                    <span class="text-muted-gray d-block text-truncate" style="max-width: 100%; font-size: 0.8rem;">{{ $order->address }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="col-6 col-md-2 text-md-center">
+                                            <span class="d-md-none text-muted-gray small d-block font-monospace text-uppercase mb-1" style="font-size: 0.6rem;">Состояние:</span>
                                             @switch($order->status)
                                                 @case('new')
-                                                    <span class="badge badge-erp bg-light text-dark border border-secondary-subtle">⏳ ПРОВЕРКА</span>
+                                                    <span class="badge-flux bg-light text-dark border border-secondary-subtle">⏳ Спецификация</span>
                                                     @break
                                                 @case('awaiting_payment')
-                                                    <span class="badge badge-erp bg-warning text-dark">⚠️ ОЖИДАЕТ ОПЛАТЫ</span>
+                                                    <span class="badge-flux text-dark" style="background-color: #ffeeba;">⚠ Счёт выставлен</span>
                                                     @break
                                                 @case('payment_review')
-                                                    <span class="badge badge-erp bg-info text-dark">🔍 ПРОВЕРКА ПЛАТЕЖА</span>
+                                                    <span class="badge-flux text-white" style="background-color: #6f42c1;">🔍 Сверка банка</span>
+                                                    @break
+                                                @case('manufacturing')
+                                                    <span class="badge-flux text-white" style="background-color: #1e4620;">🔨 В производстве</span>
                                                     @break
                                                 @case('processing')
-                                                    <span class="badge badge-erp bg-success-subtle border text-success" style="border-color: #198754 !important; color: #198754 !important;">🔨 В СБОРКЕ</span>
+                                                    <span class="badge-flux text-dark" style="background-color: #e2e3e5;">📦 Упаковка / Склад</span>
                                                     @break
                                                 @case('delivery')
-                                                    <span class="badge badge-erp bg-info-subtle border text-info" style="border-color: #0dcaf0 !important; color: #0dcaf0 !important;">🚛 ДОСТАВКА</span>
+                                                    <span class="badge-flux text-dark" style="background-color: #cff4fc;">🚛 Отгружен</span>
                                                     @break
                                                 @case('completed')
-                                                    <span class="badge badge-erp bg-dark text-white">✔️ ЗАВЕРШЕН</span>
+                                                    <span class="badge-flux text-white" style="background-color: #212529;">✔ Закрыт</span>
                                                     @break
                                                 @case('cancelled')
-                                                    <span class="badge badge-erp bg-danger-subtle border text-danger" style="border-color: #dc3545 !important; color: #dc3545 !important;">❌ ОТМЕНЕН</span>
+                                                    <span class="badge-flux text-white" style="background-color: #dc3545;">❌ Аннулирован</span>
                                                     @break
                                                 @default
-                                                    <span class="badge badge-erp bg-light text-dark border">{{ strtoupper($order->status) }}</span>
+                                                    <span class="badge-flux bg-light text-dark border">{{ $order->status }}</span>
                                             @endswitch
                                         </div>
-                                    </div>
 
-                                    <div class="mb-3 bg-light-block p-2 border-start border-subtle-gray">
-                                        <span class="small text-muted-gray d-block text-uppercase font-monospace" style="font-size: 0.6rem; letter-spacing: 0.05rem;">Логистика:</span>
-                                        <span class="text-graphite fw-semibold small">{{ $order->delivery_type == 'pickup' ? '🧱 Самовывоз со склада' : '🚚 Доставка на адрес' }}</span>
-                                        @if($order->address)
-                                            <p class="text-muted-gray small mb-0 mt-1 text-wrap" style="line-height: 1.3; font-size: 0.8rem;">{{ $order->address }}</p>
-                                        @endif
-                                    </div>
-
-                                    <!-- ИНТЕГРИРОВАННАЯ ФОРМА ОПЛАТЫ ДЛЯ МОБИЛЬНОЙ ВЕРСИИ -->
-                                    @if($order->status === 'awaiting_payment')
-                                        <div class="mb-3">
-                                            <form action="{{ route('orders.pay', $order->id) }}" method="POST" class="m-0">
-                                                @csrf
-                                                <button type="submit" class="btn btn-accent w-100 rounded-0 text-uppercase fw-bold mobile-touch-target font-monospace" style="font-size: 0.7rem; letter-spacing: 0.05rem; height: 44px;">
-                                                    💳 Я оплатил заказ
-                                                </button>
-                                            </form>
+                                        <div class="col-6 col-md-2 text-end">
+                                            <span class="d-md-none text-muted-gray small d-block font-monospace text-uppercase" style="font-size: 0.6rem;">Стоимость:</span>
+                                            <span class="fw-bold text-graphite font-monospace fs-5">{{ number_format($order->total_price, 0, '.', ' ') }} ₽</span>
                                         </div>
-                                    @endif
 
-                                    <div class="d-flex justify-content-between align-items-center pt-2 border-top border-subtle-gray">
-                                        <span class="small text-muted-gray text-uppercase font-monospace" style="font-size: 0.65rem; letter-spacing: 0.05rem;">Итого к оплате:</span>
-                                        <span class="fs-5 fw-bold text-graphite font-monospace">{{ number_format($order->total_price, 2, '.', ' ') }} ₽</span>
                                     </div>
-                                </div>
+                                </a>
                             @endforeach
                         </div>
+
                     @endif
                 </div>
 

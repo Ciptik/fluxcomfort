@@ -13,7 +13,7 @@
 
     <div class="row g-2 mb-3 align-items-center justify-content-between">
         <div class="col-12 col-md-auto d-md-none">
-            <button class="btn btn-flux-outline w-100 text-uppercase fw-bold btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileFilterSidebar">
+            <button class="btn btn-flux-outline w-100 text-uppercase fw-bold btn-sm py-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileFilterSidebar">
                 Параметры фильтрации
             </button>
         </div>
@@ -60,9 +60,9 @@
                 <div class="mb-4">
                     <h5 class="text-graphite fw-bold text-uppercase mb-2 font-monospace" style="font-size:0.75rem;">Цена, ₽</h5>
                     <div class="d-flex align-items-center gap-2">
-                        <input type="number" class="form-control form-control-sm text-center small" name="price_from" placeholder="от" value="{{ request('price_from') }}">
+                        <input type="number" class="form-control form-control-sm text-center small rounded-0" name="price_from" placeholder="от" value="{{ request('price_from') }}">
                         <span class="text-muted-gray">—</span>
-                        <input type="number" class="form-control form-control-sm text-center small" name="price_to" placeholder="до" value="{{ request('price_to') }}">
+                        <input type="number" class="form-control form-control-sm text-center small rounded-0" name="price_to" placeholder="до" value="{{ request('price_to') }}">
                     </div>
                 </div>
 
@@ -93,7 +93,8 @@
                     </div>
                 @endforelse
             </div>
-            <div class="d-flex justify-content-center mt-4 pt-3 border-top border-light">
+            
+            <div class="d-flex justify-content-center mt-4 pt-3 border-top border-subtle-gray">
                 {{ $products->appends(request()->query())->links('pagination::bootstrap-5') }}
             </div>
         </main>
@@ -102,10 +103,44 @@
 
 <div class="offcanvas offcanvas-start border-end border-subtle-gray bg-white rounded-0" tabindex="-1" id="mobileFilterSidebar" style="width: 290px;">
     <div class="offcanvas-header border-bottom border-subtle-gray py-3">
-        <h5 class="offcanvas-title text-graphite fw-bold text-uppercase fs-6 m-0">Фильтры</h5>
+        <h5 class="offcanvas-title text-graphite fw-bold text-uppercase fs-6 m-0" style="letter-spacing: 0.5px;">Параметры фильтрации</h5>
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body p-3">
-        </div>
+        <form method="GET" action="{{ route('catalog') }}">
+            @if(request('sort')) <input type="hidden" name="sort" value="{{ request('sort') }}"> @endif
+
+            <div class="mb-4">
+                <h5 class="text-graphite fw-bold text-uppercase mb-2 font-monospace" style="font-size:0.75rem;">Категория мебели</h5>
+                <div class="list-group border border-subtle-gray rounded-0">
+                    <a href="{{ route('catalog', request()->except('category')) }}" class="list-group-item list-group-item-action text-uppercase small py-2 px-3 {{ !request('category') ? 'bg-dark text-white' : 'text-graphite bg-white' }} border-0">Все модели</a>
+                    @foreach($categories as $cat)
+                        <a href="{{ route('catalog', array_merge(request()->query(), ['category' => $cat->slug])) }}" class="list-group-item list-group-item-action text-uppercase small py-2 px-3 border-0 border-top border-subtle-gray {{ request('category') == $cat->slug ? 'bg-dark text-white' : 'text-graphite bg-white' }}">{{ $cat->name }}</a>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h5 class="text-graphite fw-bold text-uppercase mb-2 font-monospace" style="font-size:0.75rem;">Цена, ₽</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="number" class="form-control form-control-sm text-center small rounded-0" name="price_from" placeholder="от" value="{{ request('price_from') }}">
+                    <span class="text-muted-gray">—</span>
+                    <input type="number" class="form-control form-control-sm text-center small rounded-0" name="price_to" placeholder="до" value="{{ request('price_to') }}">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="form-check">
+                    <input class="form-check-input rounded-0" type="checkbox" name="in_stock" value="1" id="m_filter_stock" {{ request('in_stock') ? 'checked' : '' }}>
+                    <label class="form-check-label text-graphite small text-uppercase font-monospace" for="m_filter_stock">Только в наличии</label>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-flux-primary btn-sm py-2 text-uppercase fw-bold">Применить</button>
+                <a href="{{ route('catalog') }}" class="btn btn-flux-outline btn-sm py-2 text-uppercase fw-bold">Сбросить всё</a>
+            </div>
+        </form>
+    </div>
 </div>
 @endsection
