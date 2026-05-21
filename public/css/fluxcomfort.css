@@ -1,0 +1,92 @@
+/* FLUXCOMFORT: GLOBAL BRUTALIST DESIGN SYSTEM */
+*, .card, .btn, .badge, .form-control, .form-select, .dropdown-menu, .list-group-item, .alert, .modal-content, .progress, .nav-link, .breadcrumb-item {
+    border-radius: 0px !important;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #FFFFFF;
+    color: #212529;
+    overflow-x: hidden;
+}
+
+/* Избавление от теней */
+.shadow, .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+
+/* Палитра */
+.text-graphite { color: #212529 !important; }
+.text-muted-gray { color: #6C757D !important; }
+.bg-light-block { background-color: #F8F9FA !important; }
+.border-subtle-gray { border-color: #DEE2E6 !important; }
+.text-accent { color: #198754 !important; }
+
+/* Интерактивные элементы */
+.btn-flux-primary {
+    background-color: #198754;
+    color: #ffffff;
+    border: 1px solid #198754;
+    transition: all 0.15s ease-in-out;
+    min-height: 44px; /* Touch target */
+}
+.btn-flux-primary:hover {
+    background-color: #146c43;
+    border-color: #146c43;
+    color: #ffffff;
+}
+.btn-flux-outline {
+    background-color: transparent;
+    color: #212529;
+    border: 1px solid #212529;
+    transition: all 0.15s ease-in-out;
+    min-height: 44px; /* Touch target */
+}
+.btn-flux-outline:hover {
+    background-color: #212529;
+    color: #ffffff;
+}
+
+.btn-flux-dark {
+    background-color: #212529;
+    color: #ffffff;
+    border: 1px solid #212529;
+    min-height: 44px;
+}
+.btn-flux-dark:hover {
+    background-color: #000000;
+    border-color: #000000;
+    color: #ffffff;
+}
+
+/* Формы */
+.form-control, .form-select {
+    border: 1px solid #DEE2E6;
+    color: #212529;
+    padding: 0.6rem 0.75rem;
+    min-height: 44px;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #212529;
+    box-shadow: none;
+    background-color: #FFFFFF;
+}
+
+/* Навигация */
+.nav-link-flux {
+    color: #212529;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    transition: color 0.15s ease-in-out;
+}
+.nav-link-flux:hover, .nav-link-flux.active { color: #198754; }
+
+/* Статусы */
+.badge-in-stock { background-color: #E8F5E9; color: #198754; font-weight: 500; }
+.badge-on-order { background-color: #F8F9FA; color: #6C757D; border: 1px solid #DEE2E6; font-weight: 500; }
+
+/* Адаптивные утилиты */
+@media (max-width: 767.98px) {
+    .mobile-touch-target { min-height: 44px; display: flex; align-items: center; justify-content: center; }
+}
