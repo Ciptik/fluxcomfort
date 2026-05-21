@@ -20,6 +20,7 @@
         <div class="collapse navbar-collapse" id="fluxNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-md-0 ms-md-4">
                 <li class="nav-item me-3"><a class="nav-link-flux d-block py-2 {{ request()->routeIs('catalog') ? 'active' : '' }}" href="{{ route('catalog') }}">Каталог</a></li>
+                <li class="nav-item me-3"><a class="nav-link-flux d-block py-2 {{ request()->is('delivery') ? 'active' : '' }}" href="{{ url('/delivery') }}">Доставка</a></li>
                 <li class="nav-item me-3"><a class="nav-link-flux d-block py-2 {{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about') }}">О фабрике</a></li>
                 <li class="nav-item"><a class="nav-link-flux d-block py-2 {{ request()->routeIs('contacts') ? 'active' : '' }}" href="{{ route('contacts') }}">Контакты</a></li>
             </ul>
@@ -28,11 +29,17 @@
                     корзина: <span class="fw-bold text-accent ms-1">[{{ session('cart') ? count(session('cart')) : 0 }}]</span>
                 </a>
                 @auth
+                    @if(Auth::user()->role === 'admin')
+                        <a href="{{ url('/admin') }}" class="btn btn-danger btn-sm text-uppercase fw-bold font-monospace me-md-3 mb-2 mb-md-0 rounded-0" style="font-size: 0.7rem; letter-spacing: 0.5px; padding: 5px 10px;">
+                            Панель ИС
+                        </a>
+                    @endif
+
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-graphite fw-bold text-uppercase small py-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ Auth::user()->name }}
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end border border-subtle-gray p-0 m-0">
+                        <ul class="dropdown-menu dropdown-menu-end border border-subtle-gray p-0 m-0 rounded-0">
                             <li><a class="dropdown-item py-2 small text-uppercase" href="{{ route('dashboard') }}">Кабинет</a></li>
                             <li><hr class="dropdown-divider m-0 border-subtle-gray"></li>
                             <li>
@@ -45,7 +52,7 @@
                     </div>
                 @else
                     <a href="{{ route('login') }}" class="nav-link-flux py-2 me-3 small">Войти</a>
-                    <a href="{{ route('register') }}" class="btn btn-flux-outline px-3 py-2 text-uppercase fw-bold" style="font-size: 0.75rem;">Регистрация</a>
+                    <a href="{{ route('register') }}" class="btn btn-flux-outline px-3 py-2 text-uppercase fw-bold rounded-0" style="font-size: 0.75rem;">Регистрация</a>
                 @endauth
             </div>
         </div>
@@ -71,7 +78,13 @@
             <div class="col-12 col-md-8">
                 <div class="d-flex flex-column h-100 justify-content-between align-items-center align-items-md-end">
                     <ul class="nav gap-3 gap-md-4 p-0 m-0 text-uppercase small font-monospace justify-content-center" style="letter-spacing: 0.5px;">
+                        @auth
+                            @if(Auth::user()->role === 'admin')
+                                <li><a href="{{ url('/admin') }}" class="text-danger text-decoration-none fw-bold p-0">Панель ИС</a></li>
+                            @endif
+                        @endauth
                         <li><a href="{{ route('catalog') }}" class="text-graphite text-decoration-none nav-link-flux p-0">Каталог</a></li>
+                        <li><a href="{{ url('/delivery') }}" class="text-graphite text-decoration-none nav-link-flux p-0">Доставка</a></li>
                         <li><a href="{{ route('about') }}" class="text-graphite text-decoration-none nav-link-flux p-0">О фабрике</a></li>
                         <li><a href="{{ route('contacts') }}" class="text-graphite text-decoration-none nav-link-flux p-0">Контакты</a></li>
                     </ul>
