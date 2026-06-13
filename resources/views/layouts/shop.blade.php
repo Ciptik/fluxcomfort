@@ -63,14 +63,14 @@
     @yield('content')
 </main>
 
-<footer class="bg-light-block border-top border-subtle-gray py-4 mt-auto">
+<footer class="text-white border-top border-secondary py-5 mt-auto" style="background-color: #1a1d20 !important;">
     <div class="container">
         <div class="row g-4 justify-content-between">
             <div class="col-12 col-md-4 text-center text-md-start">
-                <a class="text-graphite fw-bold text-uppercase fs-5 text-decoration-none" href="/" style="letter-spacing: 1px;">
-                    Flux<span class="text-accent">comfort</span>
+                <a class="text-white fw-bold text-uppercase fs-5 text-decoration-none" href="/" style="letter-spacing: 1px;">
+                    Flux<span style="color: #198754;">comfort</span>
                 </a>
-                <p class="small text-muted-gray m-0 mt-2 text-wrap" style="max-width: 280px; line-height: 1.5;">
+                <p class="small text-secondary m-0 mt-2 text-wrap" style="max-width: 280px; line-height: 1.5; color: #adb5bd !important;">
                     Премиальные архитектурные решения для жилых и общественных пространств.
                 </p>
             </div>
@@ -83,22 +83,28 @@
                                 <li><a href="{{ url('/admin') }}" class="text-danger text-decoration-none fw-bold p-0">Панель ИС</a></li>
                             @endif
                         @endauth
-                        <li><a href="{{ route('catalog') }}" class="text-graphite text-decoration-none nav-link-flux p-0">Каталог</a></li>
-                        <li><a href="{{ url('/delivery') }}" class="text-graphite text-decoration-none nav-link-flux p-0">Доставка</a></li>
-                        <li><a href="{{ route('about') }}" class="text-graphite text-decoration-none nav-link-flux p-0">О фабрике</a></li>
-                        <li><a href="{{ route('contacts') }}" class="text-graphite text-decoration-none nav-link-flux p-0">Контакты</a></li>
+                        <li><a href="{{ route('catalog') }}" class="text-white-50 text-decoration-none p-0 hover-white" style="transition: color 0.15s ease;">Каталог</a></li>
+                        <li><a href="{{ url('/delivery') }}" class="text-white-50 text-decoration-none p-0 hover-white" style="transition: color 0.15s ease;">Доставка</a></li>
+                        <li><a href="{{ route('about') }}" class="text-white-50 text-decoration-none p-0 hover-white" style="transition: color 0.15s ease;">О фабрике</a></li>
+                        <li><a href="{{ route('contacts') }}" class="text-white-50 text-decoration-none p-0 hover-white" style="transition: color 0.15s ease;">Контакты</a></li>
                     </ul>
                     
-                    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-4 align-items-center mt-3 mt-md-0">
-                        <a href="{{ url('/privacy') }}" class="small text-muted-gray text-decoration-none border-bottom border-transparent" style="font-size: 0.75rem;">Политика конфиденциальности</a>
-                        <span class="small text-muted-gray d-none d-sm-inline">|</span>
-                        <span class="small text-graphite fw-bold text-uppercase" style="font-size: 0.75rem;">© {{ date('Y') }} Fluxcomfort.</span>
+                    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-4 align-items-center mt-4 mt-md-0">
+                        <a href="{{ url('/privacy') }}" class="small text-decoration-none border-bottom border-transparent" style="font-size: 0.75rem; color: #adb5bd !important;">Политика конфиденциальности</a>
+                        <span class="small text-secondary d-none d-sm-inline" style="color: #6c757d !important;">|</span>
+                        <span class="small text-white-50 text-uppercase font-monospace" style="font-size: 0.75rem; letter-spacing: 0.5px;">© {{ date('Y') }} Fluxcomfort.</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </footer>
+
+<style>
+    .hover-white:hover {
+        color: #ffffff !important;
+    }
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

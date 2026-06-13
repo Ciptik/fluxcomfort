@@ -51,7 +51,7 @@ class="card-img-top img-fluid rounded-0" style="height: 200px; object-fit: cover
 @if($product->stock > 0)
 <button type="submit" class="btn btn-flux-primary w-100 text-uppercase fw-bold btn-sm d-flex align-items-center justify-content-center rounded-0" style="font-size: 0.72rem; letter-spacing: 0.5px; height: 38px;">В корзину</button>
 @else
-<a href="{{ route('product.show', $product->id) }}" class="btn btn-flux-outline w-100 text-uppercase fw-bold btn-sm d-flex align-items-center justify-content-center rounded-0" style="font-size: 0.72rem; letter-spacing: 0.5px; height: 38px;">Предзаказ</a>
+<a href="{{ route('catalog.show', $product->id) }}" class="btn btn-flux-outline w-100 text-uppercase fw-bold btn-sm d-flex align-items-center justify-content-center rounded-0" style="font-size: 0.72rem; letter-spacing: 0.5px; height: 38px;">Предзаказ</a>
 @endif
 </form>
 @endif
