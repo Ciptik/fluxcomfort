@@ -12,7 +12,7 @@
         *, .card, .btn, .badge, .form-control, .form-select, .dropdown-menu {
             border-radius: 0px !important;
         }
-        
+
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: #FFFFFF;
@@ -25,7 +25,7 @@
         .text-muted-gray { color: #6C757D; }
         .bg-light-block { background-color: #F8F9FA; }
         .border-subtle-gray { border-color: #DEE2E6 !important; }
-        
+
         /* Кнопки действия */
         .btn-flux-primary {
             background-color: #198754;
@@ -54,7 +54,7 @@
             background-color: #212529;
             color: #ffffff;
         }
-        
+
         .form-control:focus, .form-select:focus {
             border-color: #212529;
             box-shadow: none;
@@ -196,7 +196,14 @@
 </nav>
 
 <div class="container py-4 flex-grow-1">
-    
+
+    @if(session('success'))
+        <div class="alert alert-success border-0 rounded-0 font-monospace small mb-4">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger border-0 rounded-0 font-monospace small mb-4">{{ session('error') }}</div>
+    @endif
+
     <div class="pb-2 mb-4 border-bottom border-subtle-gray">
         <span class="text-uppercase text-muted-gray small font-monospace d-block mb-1" style="letter-spacing: 1px;">Ваш выбор</span>
         <h1 class="text-graphite fw-bold m-0 text-uppercase fs-4" style="letter-spacing: 1px;">Корзина заказа</h1>
@@ -220,9 +227,9 @@
         </div>
     @else
         <div class="row g-4">
-            
+
             <div class="col-12 col-lg-8">
-                
+
                 <div class="d-none d-md-block">
                     <div class="d-flex text-uppercase font-monospace small text-muted-gray pb-2 border-bottom border-subtle-gray" style="letter-spacing: 0.5px; font-size: 0.72rem;">
                         <div style="width: 45%;">Архитектурная модель</div>
@@ -234,17 +241,20 @@
 
                     @foreach($cart as $id => $item)
                         <div class="d-flex align-items-center py-3 border-bottom border-subtle-gray">
-                            
+
                             <div class="d-flex align-items-center" style="width: 45%;">
                                 <div class="cart-img-container me-3">
-                                    <img src="{{ !empty($item['image']) ? asset($item['image']) : 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23F8F9FA%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%236C757D%22>Fluxcomfort</text></svg>' }}" 
-                                         alt="{{ $item['name'] }}" 
+                                    <img src="{{ !empty($item['image']) ? asset($item['image']) : 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23F8F9FA%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%236C757D%22>Fluxcomfort</text></svg>' }}"
+                                         alt="{{ $item['name'] }}"
                                          class="cart-img-product"
                                          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23F8F9FA%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%236C757D%22>Fluxcomfort</text></svg>';">
                                 </div>
                                 <div>
                                     <h5 class="text-graphite fw-bold fs-6 text-uppercase m-0 mb-1" style="letter-spacing: 0.5px;">{{ $item['name'] }}</h5>
                                     <span class="font-monospace text-muted-gray d-block" style="font-size: 0.65rem;">ART: FLUX-{{ $id }}</span>
+                                    @if(isset($item['stock']))
+                                        <span class="font-monospace text-success d-block" style="font-size: 0.65rem;">Доступно: {{ $item['stock'] }} шт.</span>
+                                    @endif
                                 </div>
                             </div>
 
@@ -254,7 +264,7 @@
 
                             <div class="d-flex justify-content-center" style="width: 20%;">
                                 <div class="quantity-counter">
-                                    <form action="{{ url('/cart/update/'.$id) }}" method="POST" class="m-0">
+                                    <form action="{{ route('cart.update', $id) }}" method="POST" class="m-0">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="quantity" value="{{ $item['quantity'] - 1 }}">
@@ -263,11 +273,11 @@
 
                                     <div class="quantity-value">{{ $item['quantity'] }}</div>
 
-                                    <form action="{{ url('/cart/update/'.$id) }}" method="POST" class="m-0">
+                                    <form action="{{ route('cart.update', $id) }}" method="POST" class="m-0">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}">
-                                        <button type="submit" class="quantity-btn">+</button>
+                                        <button type="submit" class="quantity-btn" {{ (isset($item['stock']) && $item['quantity'] >= $item['stock']) ? 'disabled' : '' }}>+</button>
                                     </form>
                                 </div>
                             </div>
@@ -277,7 +287,7 @@
                             </div>
 
                             <div class="text-center" style="width: 5%;">
-                                <form action="{{ url('/remove-from-cart/' . $id) }}" method="POST" class="m-0">
+                                <form action="{{ route('cart.remove', $id) }}" method="POST" class="m-0">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn p-0 border-0 text-muted-gray text-decoration-none" style="font-size: 1.2rem; line-height: 1;">
@@ -293,22 +303,25 @@
                 <div class="d-md-none">
                     @foreach($cart as $id => $item)
                         <div class="p-3 border border-subtle-gray bg-white mb-3 position-relative">
-                            
+
                             <div class="d-flex align-items-center mb-3 pe-4">
                                 <div class="cart-img-container me-3">
-                                    <img src="{{ !empty($item['image']) ? asset($item['image']) : 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23F8F9FA%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%236C757D%22>Fluxcomfort</text></svg>' }}" 
-                                         alt="{{ $item['name'] }}" 
+                                    <img src="{{ !empty($item['image']) ? asset($item['image']) : 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23F8F9FA%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%236C757D%22>Fluxcomfort</text></svg>' }}"
+                                         alt="{{ $item['name'] }}"
                                          class="cart-img-product"
                                          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23F8F9FA%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%236C757D%22>Fluxcomfort</text></svg>';">
                                 </div>
                                 <div>
                                     <div class="fw-bold text-graphite text-uppercase small" style="letter-spacing: 0.5px;">{{ $item['name'] }}</div>
                                     <span class="font-monospace text-muted-gray d-block" style="font-size: 0.65rem;">ART: FLUX-{{ $id }}</span>
+                                    @if(isset($item['stock']))
+                                        <span class="font-monospace text-success d-block" style="font-size: 0.65rem;">Склад: {{ $item['stock'] }} шт.</span>
+                                    @endif
                                 </div>
                             </div>
 
                             <div class="position-absolute top-0 end-0 p-2">
-                                <form action="{{ url('/remove-from-cart/' . $id) }}" method="POST" class="m-0">
+                                <form action="{{ route('cart.remove', $id) }}" method="POST" class="m-0">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn text-muted-gray d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 1.5rem; line-height: 1;">
@@ -320,18 +333,18 @@
                             <div class="row g-0 pt-3 border-top border-subtle-gray align-items-center">
                                 <div class="col-6">
                                     <div class="quantity-counter">
-                                        <form action="{{ url('/cart/update/'.$id) }}" method="POST" class="m-0">
+                                        <form action="{{ route('cart.update', $id) }}" method="POST" class="m-0">
                                             @csrf
                                             @method('PATCH')
                                             <input type="hidden" name="quantity" value="{{ $item['quantity'] - 1 }}">
                                             <button type="submit" class="quantity-btn" style="width: 44px; height: 44px;" {{ $item['quantity'] <= 1 ? 'disabled' : '' }}>-</button>
                                         </form>
                                         <div class="quantity-value" style="height: 44px;">{{ $item['quantity'] }}</div>
-                                        <form action="{{ url('/cart/update/'.$id) }}" method="POST" class="m-0">
+                                        <form action="{{ route('cart.update', $id) }}" method="POST" class="m-0">
                                             @csrf
                                             @method('PATCH')
                                             <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}">
-                                            <button type="submit" class="quantity-btn" style="width: 44px; height: 44px;">+</button>
+                                            <button type="submit" class="quantity-btn" style="width: 44px; height: 44px;" {{ (isset($item['stock']) && $item['quantity'] >= $item['stock']) ? 'disabled' : '' }}>+</button>
                                         </form>
                                     </div>
                                 </div>
@@ -354,9 +367,9 @@
 
             <div class="col-12 col-lg-4">
                 <div class="p-4 bg-light-block border border-subtle-gray">
-                    
+
                     <h3 class="text-graphite fw-bold text-uppercase fs-6 mb-3 font-monospace pb-2 border-bottom border-subtle-gray" style="letter-spacing: 0.5px;">Спецификация</h3>
-                    
+
                     <div class="d-flex justify-content-between align-items-center mb-2 font-monospace small">
                         <span class="text-muted-gray">Выбрано моделей:</span>
                         <span class="text-graphite fw-bold">{{ count($cart) }}</span>
@@ -373,7 +386,7 @@
 
                     <form method="POST" action="{{ route('orders.store') }}">
                         @csrf
-                        
+
                         <div class="mb-3">
                             <label for="delivery_method" class="form-label small text-uppercase text-muted-gray fw-bold font-monospace" style="letter-spacing: 0.5px; font-size: 0.68rem;">Логистика</label>
                             <select class="form-select form-select-sm border-subtle-gray text-graphite py-2" id="delivery_method" name="delivery_method" required onchange="toggleAddressField()">
@@ -425,7 +438,7 @@
         const method = document.getElementById('delivery_method').value;
         const addressContainer = document.getElementById('address_container');
         const addressInput = document.getElementById('address');
-        
+
         if (method === 'pickup') {
             addressContainer.style.display = 'none';
             addressInput.removeAttribute('required');

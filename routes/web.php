@@ -17,15 +17,15 @@ Route::get('/catalog/{id}', [ShopController::class, 'show'])->name('catalog.show
 // --- КОРЗИНА СИСТЕМЫ ---
 Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
 Route::post('/add-to-cart/{id}', [ShopController::class, 'addToCart'])->name('cart.add');
+Route::patch('/cart/update/{id}', [ShopController::class, 'updateCart'])->name('cart.update');
 Route::delete('/remove-from-cart/{id}', [ShopController::class, 'removeFromCart'])->name('cart.remove');
 
 // --- ОФОРМЛЕНИЕ ЗАКАЗА И КЛИЕНТСКИЕ ДЕЙСТВИЯ (ОБЯЗАТЕЛЬНО ПОД АВТОРИЗАЦИЕЙ) ---
 Route::middleware(['auth'])->group(function () {
     Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
     Route::post('/orders', [ShopController::class, 'storeOrder'])->name('orders.store');
-     
+
     // ЦЕПОЧКА ШАГ 3: Клиент платит по реквизитам и жмет кнопку "Подтвердить оплату"
-    // Переводит заказ из 'awaiting_payment' в статус 'payment_review'
     Route::post('/orders/{id}/pay', function ($id) {
         $order = DB::table('orders')->where('id', $id)->where('user_id', Auth::id())->first();
         if (!$order) abort(404);
@@ -40,13 +40,11 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->back()->with('error', 'Этот заказ нельзя оплатить на данном этапе.');
     })->name('orders.pay');
 
-    // ДОБАВЛЕНО: Просмотр страницы конкретного заказа клиентом
+    // Просмотр страницы конкретного заказа клиентом
     Route::get('/orders/{id}', function ($id) {
-        // Проверяем, что заказ существует и принадлежит именно авторизованному клиенту
         $order = DB::table('orders')->where('id', $id)->where('user_id', Auth::id())->first();
         if (!$order) abort(404);
 
-        // Собираем все позиции мебельного заказа с данными из таблицы товаров
         $items = DB::table('order_items')
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->where('order_items.order_id', $id)
@@ -65,7 +63,7 @@ Route::get('/dashboard', function () {
 
 // --- ПАНЕЛЬ АДМИНИСТРАТОРА (МЕНЕДЖЕР ФАБРИКИ FLUXCOMFORT) ---
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(function () {
-            
+
     // 1. Управление заказами (Главная админки)
     Route::get('/', function () {
         $orders = DB::table('orders')
@@ -76,7 +74,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         return view('admin.dashboard', compact('orders'));
     })->name('admin.dashboard');
 
-    // ЦЕПОЧКА ШАГИ 2, 4, 5, 6: Изменение статуса заказа админом на любом этапе
+    // Изменение статуса заказа админом
     Route::post('/orders/{id}/status', function (Request $request, $id) {
         $request->validate([
             'status' => 'required|in:new,awaiting_payment,payment_review,manufacturing,processing,delivery,completed,cancelled'
@@ -117,7 +115,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         ]);
 
         $slug = \Illuminate\Support\Str::slug($request->name);
-        $imagePath = 'images/products/default.jpg';    
+        $imagePath = 'images/products/default.jpg';
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -137,7 +135,6 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
             'created_at' => now(),
             'updated_at' => now()
         ]);
-
         return redirect()->route('admin.products')->with('success', 'Новая модель мебели успешно добавлена в каталог!');
     })->name('admin.products.store');
 
@@ -163,7 +160,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         if (!$product) abort(404);
 
         $slug = \Illuminate\Support\Str::slug($request->name);
-        $imagePath = $product->image_path;    
+        $imagePath = $product->image_path;
 
         if ($request->hasFile('image')) {
             if ($product->image_path && $product->image_path !== 'images/products/default.jpg') {
@@ -188,7 +185,6 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
             'image_path' => $imagePath,
             'updated_at' => now()
         ]);
-
         return redirect()->route('admin.products')->with('success', 'Параметры мебели успешно обновлены!');
     })->name('admin.products.update');
 
@@ -277,7 +273,6 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->group(func
         }
 
         DB::table('users')->where('id', $id)->update($updateData);
-
         return redirect()->route('admin.users')->with('success', 'Данные пользователя успешно обновлены в базе!');
     })->name('admin.users.update');
 });
@@ -289,12 +284,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// --- ИНФОРМАЦИОННЫЕ СТРАНИЦЫ ДЛЯ ДИПЛОМА ---
+// --- ИНФОРМАЦИОННЫЕ СТРАНИЦЫ ---
 Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/delivery', 'delivery')->name('delivery');
 Route::view('/about', 'about')->name('about');
 Route::view('/contacts', 'contacts')->name('contacts');
-
 Route::post('/contacts/send', function (Request $request) {
     $request->validate([
         'name' => 'required|string|max:255',

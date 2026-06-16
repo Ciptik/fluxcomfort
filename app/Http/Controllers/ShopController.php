@@ -73,9 +73,21 @@ class ShopController extends Controller
     {
         $cart = session()->get('cart', []);
         $total = 0;
-        foreach($cart as $item) {
+
+        // Синхронизируем актуальные остатки со склада, чтобы корзина знала лимиты
+        foreach($cart as $id => $item) {
+            $product = DB::table('products')->where('id', $id)->first();
+            if ($product) {
+                $cart[$id]['stock'] = $product->stock;
+            } else {
+                // Если товар удален из админки, убираем его из сессии
+                unset($cart[$id]);
+                continue;
+            }
             $total += $item['price'] * $item['quantity'];
         }
+
+        session()->put('cart', $cart);
         return view('cart', compact('cart', 'total'));
     }
 
@@ -88,16 +100,26 @@ class ShopController extends Controller
             return redirect()->back()->with('error', 'Товар не найден');
         }
 
+        // Защита от добавления отсутствующего товара
+        if ($product->stock <= 0) {
+            return redirect()->back()->with('error', 'Извините, данной модели мебели сейчас нет в наличии на складе.');
+        }
+
         $cart = session()->get('cart', []);
 
         if(isset($cart[$id])) {
+            // Проверка лимита при инкременте
+            if ($cart[$id]['quantity'] >= $product->stock) {
+                return redirect()->back()->with('error', "Нельзя добавить больше товара. На складе доступно всего: {$product->stock} шт.");
+            }
             $cart[$id]['quantity']++;
         } else {
             $cart[$id] = [
                 "name" => $product->name,
                 "quantity" => 1,
                 "price" => $product->price,
-                "image" => $product->image_path
+                "image" => $product->image_path,
+                "stock" => $product->stock
             ];
         }
 
@@ -105,7 +127,35 @@ class ShopController extends Controller
         return redirect()->back()->with('success', 'Товар добавлен в корзину!');
     }
 
-    // Умное удаление
+    // Изменение количества товара напрямую из корзины (Исправление ошибки 404/500)
+    public function updateCart(Request $request, $id)
+    {
+        $request->validate([
+            'quantity' => 'required|integer|min:1'
+        ]);
+
+        $product = DB::table('products')->where('id', $id)->first();
+        if (!$product) {
+            return redirect()->back()->with('error', 'Модель мебели не найдена на производстве.');
+        }
+
+        // Проверка жесткого лимита остатков в БД
+        if ($request->quantity > $product->stock) {
+            return redirect()->back()->with('error', "Превышен лимит запасов. На складе фабрики доступно только: {$product->stock} шт.");
+        }
+
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity'] = $request->quantity;
+            session()->put('cart', $cart);
+            return redirect()->back()->with('success', 'Спецификация количества обновлена.');
+        }
+
+        return redirect()->back();
+    }
+
+    // Умное удаление / уменьшение на единицу через старый интерфейс
     public function removeFromCart($id)
     {
         $cart = session()->get('cart', []);
@@ -140,7 +190,7 @@ class ShopController extends Controller
         return view('checkout', compact('cart', 'total'));
     }
 
-    // Обработка оформления заказа
+    // Обработка оформления заказа с финальной валидацией остатков
     public function storeOrder(Request $request)
     {
         $cart = session()->get('cart', []);
@@ -155,12 +205,20 @@ class ShopController extends Controller
             'address' => 'nullable|string|max:500',
         ]);
 
+        // Финальная проверка остатков перед списанием (защита от состояния гонки / Race Condition)
+        foreach ($cart as $productId => $item) {
+            $product = DB::table('products')->where('id', $productId)->first();
+            if (!$product || $item['quantity'] > $product->stock) {
+                return redirect()->route('cart')->with('error', "Ошибка оформления: товар «{$item['name']}» закончился или его недостаточно на складе.");
+            }
+        }
+
         $total = 0;
         foreach($cart as $item) {
             $total += $item['price'] * $item['quantity'];
         }
 
-        // Сохраняем заказ с корректным полем delivery_type под структуру БД
+        // Сохраняем заказ
         $orderId = DB::table('orders')->insertGetId([
             'user_id' => Auth::id(),  
             'delivery_type' => $request->delivery_method,
@@ -172,7 +230,7 @@ class ShopController extends Controller
             'updated_at' => now(),
         ]);
 
-        // Переносим товары в order_items
+        // Переносим товары в order_items и списываем со склада
         foreach ($cart as $productId => $item) {
             DB::table('order_items')->insert([
                 'order_id' => $orderId,
@@ -183,7 +241,7 @@ class ShopController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Уменьшаем остаток на складе
+            // Безопасное уменьшение остатка
             DB::table('products')->where('id', $productId)->decrement('stock', $item['quantity']);
         }
 
