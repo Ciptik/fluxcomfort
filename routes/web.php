@@ -151,13 +151,14 @@ Route::middleware([AdminMiddleware::class])->group(function () {
 
         DB::table('products')->insert([
             'name' => $request->name,
-            'price' => $request->price,
-            'stock' => $request->stock,
-            'category_id' => $request->category_id,
-            'description' => $request->description,
-            'image_path' => $imagePath,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'slug' => \Illuminate\Support\Str::slug($request->name), // <-- ЭТО КЛЮЧЕВАЯ СТРОКА
+                                      'price' => $request->price,
+                                      'stock' => $request->stock,
+                                      'category_id' => $request->category_id,
+                                      'description' => $request->description,
+                                      'image_path' => $imagePath,
+                                      'created_at' => now(),
+                                      'updated_at' => now(),
         ]);
 
         return redirect()->route('admin.products')->with('success', 'Новая модель успешно добавлена в каталог фабрики.');

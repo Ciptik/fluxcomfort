@@ -56,7 +56,7 @@
 </section>
 
 <!-- ПОДКЛЮЧЕНИЕ СКРИПТА BOOTSTRAP ДЛЯ ОТКРЫТИЯ МОДАЛКИ (ЕСЛИ ЕЩЕ НЕ ПОДКЛЮЧЕН В ПАКЕТЕ) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}" defer></script>
 
 <!-- Скрипт автоматического открытия модального окна в случае ошибок валидации -->
 @if($errors->userDeletion->isNotEmpty())

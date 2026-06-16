@@ -1,5 +1,5 @@
 <x-app-layout>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
 
 <style>
 /* Глобальная концепция светлой темы Fluxcomfort */
@@ -243,7 +243,7 @@ body, .min-h-screen, main {
 <div class="row g-0 align-items-center p-3 responsive-table-row">
 <div class="col-12 col-md-6 d-flex align-items-center mb-2 mb-md-0">
 <div class="border border-subtle-gray bg-light-block text-center" style="width: 70px; height: 70px; flex-shrink: 0;">
-<img src="{{ $item->image_path ? asset($item->image_path) : 'https://via.placeholder.com/70' }}" alt="{{ $item->product_name }}" class="img-fluid rounded-0 h-100 object-fit-cover">
+<img src="{{ $item->image_path ? asset($item->image_path) : 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2270%22 height=%2270%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23F8F9FA%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2210%22 fill=%22%236C757D%22>Fluxcomfort</text></svg>' }}" alt="{{ $item->product_name }}" class="img-fluid rounded-0 h-100 object-fit-cover">
 </div>
 <div class="ms-3">
 <div class="fw-bold text-graphite text-wrap small">{{ $item->product_name }}</div>
@@ -297,5 +297,5 @@ body, .min-h-screen, main {
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}" defer></script>
 </x-app-layout>
