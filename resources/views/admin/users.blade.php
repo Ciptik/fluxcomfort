@@ -1,204 +1,68 @@
 @extends('layouts.shop')
 
 @section('content')
-<div class="container py-3" style="color: #212529; font-family: system-ui, -apple-system, sans-serif;">
+<div class="container py-4" style="color: #212529; font-family: system-ui, -apple-system, sans-serif;">
     
-    <!-- ПРИНУДИТЕЛЬНЫЙ СБРОС ОКРУГЛЕНИЙ ДЛЯ ВСЕХ КОМПОНЕНТОВ ПАНЕЛИ -->
-    <style>
-        .rounded-0, .btn, .form-select, .badge, .table, .card, .alert, .nav-link {
-            border-radius: 0px !important;
-        }
-        .text-graphite { color: #212529; }
-        .text-muted-gray { color: #6C757D; }
-        .bg-light-block { background-color: #F8F9FA; }
-        .border-subtle-gray { border-color: #DEE2E6 !important; }
-        
-        /* Стили для кастомных вкладок управления */
-        .nav-admin .nav-link {
-            color: #212529;
-            border: 1px solid transparent;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.05rem;
-            transition: none;
-        }
-        .nav-admin .nav-link.active {
-            background-color: #212529 !important;
-            color: #FFFFFF !important;
-            border-color: #212529 !important;
-        }
-        .nav-admin .nav-link:not(.active):hover {
-            background-color: #F8F9FA;
-            border-color: #DEE2E6;
-            color: #212529;
-        }
-
-        @media (max-width: 767.98px) {
-            .mobile-touch-target {
-                min-height: 44px;
-            }
-            .nav-admin .nav-link {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-                height: 46px;
-                font-size: 0.7rem;
-                padding: 5px 2px;
-            }
-        }
-    </style>
-
-    <!-- ЗАГОЛОВОК ПАНЕЛИ С КНОПКОЙ СОЗДАНИЯ -->
-    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center pb-2 mb-3 border-bottom border-subtle-gray gap-2">
-        <h1 class="fs-4 fs-md-3 text-uppercase fw-bold text-graphite m-0" style="letter-spacing: 0.03rem;">
-            Контроль доступа фабрики <span style="color: #198754;">Fluxcomfort</span>
-        </h1>
-        <span class="badge bg-dark px-3 py-2 text-uppercase d-none d-lg-inline-block" style="font-size: 0.75rem; letter-spacing: 0.05rem;">
-            Панель администратора
-        </span>
-    </div>
-
-    <!-- МЕНЮ НАВИГАЦИИ АДМИНИСТРАТОРА -->
-    <div class="mb-4 border-bottom border-subtle-gray">
-        <ul class="nav nav-admin row g-0">
-            <li class="nav-item col-6 col-md-auto">
-                <a class="nav-link w-100 px-md-4 py-md-2" href="{{ route('admin.dashboard') }}">
-                    📦 Заказы фабрики
-                </a>
-            </li>
-            <li class="nav-item col-6 col-md-auto">
-                <a class="nav-link w-100 px-md-4 py-md-2" href="{{ route('admin.products') }}">
-                    🪑 Ассортимент (Товары)
-                </a>
-            </li>
-            <li class="nav-item col-12 col-md-auto">
-                <a class="nav-link active w-100 px-md-4 py-md-2 border-top border-md-0" href="{{ route('admin.users') }}">
-                    👥 Пользователи
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- УВЕДОМЛЕНИЯ И ОШИБКИ БЕЗОПАСНОСТИ -->
     @if(session('success'))
-        <div class="alert alert-success border-0 bg-light-block border-start border-3 text-graphite mb-4" style="border-color: #198754 !important;" role="alert">
-            {{ session('success') }}
+        <div class="alert alert-success rounded-0 border-0 font-monospace mb-4 p-3" style="background-color: #d1e7dd; color: #0f5132;">
+            // {{ session('success') }}
         </div>
     @endif
-
     @if(session('error'))
-        <div class="alert alert-danger border-0 bg-light-block border-start border-3 text-graphite mb-4" style="border-color: #dc3545 !important;" role="alert">
-            {{ session('error') }}
+        <div class="alert alert-danger rounded-0 border-0 font-monospace mb-4 p-3" style="background-color: #f8d7da; color: #842029;">
+            // {{ session('error') }}
         </div>
     @endif
 
-    <!-- СЕКЦИЯ ДЕЙСТВИЙ: ЗАГОВОЛОК СПИСКА + БРУТАЛЬНАЯ КНОПКА ДОБАВЛЕНИЯ -->
-    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-3">
-        <div class="text-uppercase fw-bold text-graphite small font-monospace" style="letter-spacing: 0.05rem;">
-            Зарегистрированные пользователи
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center border-bottom border-dark pb-3 mb-4 gap-3">
+        <div>
+            <span class="text-uppercase text-muted font-monospace small" style="font-size: 0.7rem; letter-spacing: 1px;">ACCOUNTS // ДОСТУП В СИСТЕМУ</span>
+            <h1 class="text-uppercase fw-bold text-graphite m-0 fs-3" style="letter-spacing: -0.5px;">База пользователей</h1>
         </div>
-        <a href="{{ route('admin.users.create') }}" class="btn btn-dark rounded-0 text-uppercase fw-bold d-inline-flex align-items-center justify-content-center px-4 mobile-touch-target w-100 w-sm-auto" style="font-size: 0.75rem; letter-spacing: 0.05rem; height: 44px;">
-            + Создать пользователя
-        </a>
+        <div class="d-flex gap-2 w-100 w-sm-auto">
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-dark rounded-0 text-uppercase fw-bold mobile-touch-target px-3 py-2 fs-6" style="letter-spacing: 0.05rem;">🔙 Заказы</a>
+            <a href="{{ route('admin.users.create') }}" class="btn btn-dark rounded-0 text-uppercase fw-bold mobile-touch-target px-3 py-2 fs-6" style="letter-spacing: 0.05rem;">➕ Создать профиль</a>
+        </div>
     </div>
 
-    <!-- ДЕСКТОПНАЯ СТРОГАЯ ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ (ЭКРАНЫ >= 768px) -->
-    <div class="table-responsive d-none d-md-block bg-white border border-subtle-gray">
-        <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
-            <thead class="bg-light-block text-graphite text-uppercase small fw-bold border-bottom border-subtle-gray">
+    <div class="table-responsive border border-subtle-gray">
+        <table class="table table-striped m-0 align-middle font-monospace fs-6">
+            <thead class="table-dark text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05rem;">
                 <tr>
-                    <th scope="col" class="py-3 px-4 border-subtle-gray" style="width: 5%;">ID</th>
-                    <th scope="col" class="py-3 border-subtle-gray" style="width: 30%;">Имя пользователя</th>
-                    <th scope="col" class="py-3 border-subtle-gray" style="width: 25%;">Email-адрес</th>
-                    <th scope="col" class="py-3 text-center border-subtle-gray" style="width: 15%;">Статус роли</th>
-                    <th scope="col" class="py-3 text-end px-4 border-subtle-gray" style="width: 15%;">Изменить уровень</th>
-                    <th scope="col" class="py-3 text-end px-4 border-subtle-gray" style="width: 10%;">Действия</th>
+                    <th class="p-3">ID</th>
+                    <th class="p-3">Имя сотрудника / клиента</th>
+                    <th class="p-3">Email</th>
+                    <th class="p-3">Роль доступа</th>
+                    <th class="p-3 text-end">Действия</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($users as $user)
-                    <tr class="border-bottom border-subtle-gray">
-                        <td class="py-3 px-4 fw-bold text-graphite border-subtle-gray">#{{ $user->id }}</td>
-                        <td class="py-3 border-subtle-gray fw-semibold text-graphite">
-                            {{ $user->name }}
-                            @if(Auth::id() == $user->id)
-                                <span class="text-muted-gray small fw-normal ms-1">(Вы)</span>
-                            @endif
-                        </td>
-                        <td class="py-3 border-subtle-gray text-muted-gray">{{ $user->email }}</td>
-                        <td class="py-3 text-center border-subtle-gray">
-                            @if(isset($user->role) && $user->role === 'admin')
-                                <span class="badge bg-dark text-white px-2 py-1 text-uppercase font-monospace" style="font-size: 0.7rem; letter-spacing: 0.05rem;">АДМИНИСТРАТОР</span>
-                            @else
-                                <span class="badge bg-light text-dark border border-dark-subtle px-2 py-1 text-uppercase font-monospace" style="font-size: 0.7rem; letter-spacing: 0.05rem;">КЛИЕНТ</span>
-                            @endif
-                        </td>
-                        <td class="py-3 text-end px-4 border-subtle-gray">
-                            <form action="{{ route('admin.users.role', $user->id) }}" method="POST" class="d-flex gap-1 justify-content-end">
+                <tr>
+                    <td class="p-3 fw-bold">#{{ $user->id }}</td>
+                    <td class="p-3 text-graphite fw-bold">{{ $user->name }}</td>
+                    <td class="p-3 text-muted-gray">{{ $user->email }}</td>
+                    <td class="p-3">
+                        <span class="badge bg-secondary rounded-0 text-uppercase px-2 py-1" style="font-size: 0.7rem; color: #fff;">{{ $user->role }}</span>
+                    </td>
+                    <td class="p-3 text-end">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-outline-dark rounded-0 text-uppercase fw-bold px-3 py-1 fs-6">
+                                📝 Изменить
+                            </a>
+                            <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" class="m-0" onsubmit="return confirm('Удалить аккаунт пользователя {{ $user->name }}?');">
                                 @csrf
-                                <select name="role" class="form-select form-select-sm rounded-0 border-subtle-gray text-uppercase fw-bold text-graphite" style="font-size: 0.75rem; max-width: 130px;" {{ Auth::id() == $user->id ? 'disabled' : '' }}>
-                                    <option value="user" {{ (!isset($user->role) || $user->role !== 'admin') ? 'selected' : '' }}>Клиент</option>
-                                    <option value="admin" {{ (isset($user->role) && $user->role === 'admin') ? 'selected' : '' }}>Админ</option>
-                                </select>
-                                <button type="submit" class="btn btn-dark btn-sm rounded-0 px-2 text-uppercase fw-bold" style="font-size: 0.7rem;" {{ Auth::id() == $user->id ? 'disabled' : '' }}>ОК</button>
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-dark rounded-0 text-uppercase fw-bold px-3 py-1 fs-6" {{ Auth::id() == $user->id ? 'disabled opacity-50' : '' }}>
+                                    🗑️ Удалить
+                                </button>
                             </form>
-                        </td>
-                        <td class="py-3 text-end px-4 border-subtle-gray">
-                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-outline-dark btn-sm rounded-0 text-uppercase fw-bold" style="font-size: 0.7rem; padding: 2px 8px;">Изменить</a>
-                        </td>
-                    </tr>
+                        </div>
+                    </td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
-    </div>
-
-    <!-- МОБИЛЬНАЯ АДАПТИВНАЯ ВЕРСТКА ДЛЯ СМАРТФОНОВ (ЭКРАНЫ < 768px) -->
-    <div class="d-md-none d-flex flex-column gap-3">
-        @foreach($users as $user)
-            <div class="border border-subtle-gray p-3 bg-white">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <span class="text-graphite fw-bold fs-6">#{{ $user->id }}</span>
-                        <span class="text-graphite fw-bold ms-2">
-                            {{ $user->name }}
-                            @if(Auth::id() == $user->id)
-                                <span class="text-muted-gray small fw-normal">(Вы)</span>
-                            @endif
-                        </span>
-                    </div>
-                    <div>
-                        @if(isset($user->role) && $user->role === 'admin')
-                            <span class="badge bg-dark text-white px-2 py-1 text-uppercase font-monospace" style="font-size: 0.65rem;">АДМИН</span>
-                        @else
-                            <span class="badge bg-light text-dark border border-dark-subtle px-2 py-1 text-uppercase font-monospace" style="font-size: 0.65rem;">КЛИЕНТ</span>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="bg-light-block p-2 mb-3 border border-subtle-gray" style="font-size: 0.85rem;">
-                    <span class="text-muted-gray">Email:</span> <span class="text-graphite font-monospace text-wrap">{{ $user->email }}</span>
-                </div>
-
-                <!-- Кнопка перехода к полному редактированию профиля -->
-                <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-outline-dark w-100 rounded-0 text-uppercase fw-bold mb-2 mobile-touch-target d-flex align-items-center justify-content-center" style="font-size: 0.75rem; letter-spacing: 0.05rem;">📝 Редактировать профиль</a>
-
-                <!-- Форма смены ролей под палец (>= 44px) -->
-                <form action="{{ route('admin.users.role', $user->id) }}" method="POST">
-                    @csrf
-                    <div class="input-group">
-                        <select name="role" class="form-select rounded-0 border-subtle-gray text-uppercase fw-bold text-graphite mobile-touch-target" style="font-size: 0.85rem;" {{ Auth::id() == $user->id ? 'disabled' : '' }}>
-                            <option value="user" {{ (!isset($user->role) || $user->role !== 'admin') ? 'selected' : '' }}>Клиент</option>
-                            <option value="admin" {{ (isset($user->role) && $user->role === 'admin') ? 'selected' : '' }}>Админ</option>
-                        </select>
-                        <button type="submit" class="btn btn-dark rounded-0 text-uppercase fw-bold mobile-touch-target px-3" style="font-size: 0.75rem; letter-spacing: 0.05rem;" {{ Auth::id() == $user->id ? 'disabled' : '' }}>
-                            ОК
-                        </button>
-                    </div>
-                </form>
-            </div>
-        @endforeach
     </div>
 </div>
 @endsection
