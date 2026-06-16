@@ -243,11 +243,11 @@ body, .min-h-screen, main {
 <div class="row g-0 align-items-center p-3 responsive-table-row">
 <div class="col-12 col-md-6 d-flex align-items-center mb-2 mb-md-0">
 <div class="border border-subtle-gray bg-light-block text-center" style="width: 70px; height: 70px; flex-shrink: 0;">
-<img src="{{ $item->image_path ? asset($item->image_path) : 'https://via.placeholder.com/70' }}" alt="{{ $item->name }}" class="img-fluid rounded-0 h-100 object-fit-cover">
+<img src="{{ $item->image_path ? asset($item->image_path) : 'https://via.placeholder.com/70' }}" alt="{{ $item->product_name }}" class="img-fluid rounded-0 h-100 object-fit-cover">
 </div>
 <div class="ms-3">
-<div class="fw-bold text-graphite text-wrap small">{{ $item->name }}</div>
-<div class="text-muted-gray font-monospace" style="font-size: 0.75rem;">Код модели: {{ $item->slug }}</div>
+<div class="fw-bold text-graphite text-wrap small">{{ $item->product_name }}</div>
+<div class="text-muted-gray font-monospace" style="font-size: 0.75rem;">Код модели: #{{ $item->product_id }}</div>
 </div>
 </div>
 

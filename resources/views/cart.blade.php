@@ -160,13 +160,13 @@
             <ul class="navbar-nav me-auto mb-2 mb-md-0 ms-md-4">
                 <li class="nav-item me-3">
                     <a class="nav-link-flux d-block py-2" href="{{ route('catalog') }}">Каталог</a>
-                </li>
+                </td>
                 <li class="nav-item me-3">
                     <a class="nav-link-flux d-block py-2" href="/">О фабрике</a>
-                </li>
+                </td>
                 <li class="nav-item">
                     <a class="nav-link-flux d-block py-2" href="#">Контакты</a>
-                </li>
+                </td>
             </ul>
 
             <div class="navbar-nav d-flex align-items-md-center border-top border-md-0 pt-3 pt-md-0 mt-3 mt-md-0">
@@ -402,7 +402,7 @@
 
                         <div class="mb-3">
                             <label for="phone" class="form-label small text-uppercase text-muted-gray fw-bold font-monospace" style="letter-spacing: 0.5px; font-size: 0.68rem;">Телефон для связи</label>
-                            <input type="tel" class="form-control form-control-sm border-subtle-gray py-2" id="phone" name="phone" placeholder="+7 (___) ___-__-__" required>
+                            <input type="tel" class="form-control form-control-sm border-subtle-gray py-2" id="phone" name="phone" placeholder="+7 (999) 000-00-00" pattern="^(\+7|8)?\s?\(?\d{3}\)?\s?\d{3}-?\d{2}-?\d{2}$" title="Введите номер телефона в корректном формате (например: +7 (999) 123-45-67 или 89991234567)" required>
                         </div>
 
                         <div class="mb-3">

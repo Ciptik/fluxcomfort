@@ -285,4 +285,26 @@ Route::middleware([AdminMiddleware::class])->group(function () {
     })->name('admin.users.delete');
 });
 
+
+
+
+
+Route::post('/contacts', function (Request $request) {
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'message' => 'required|string',
+    ]);
+
+    // Пример сохранения в базу данных (если есть таблица messages)
+    // DB::table('messages')->insert([
+    //     'name' => $request->name,
+    //     'email' => $request->email,
+    //     'message' => $request->message,
+    //     'created_at' => now(),
+    // ]);
+
+    return redirect()->back()->with('success', '// ВАШЕ СООБЩЕНИЕ ПРИНЯТО. МЕНЕДЖЕР СВЯЖЕТСЯ С ВАМИ //');
+})->name('contacts.messages.store');
+
 require __DIR__.'/auth.php';
